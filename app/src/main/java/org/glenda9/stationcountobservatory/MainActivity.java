@@ -126,9 +126,7 @@ public class MainActivity extends AppCompatActivity {
 
             Log.i(LOGNAME, "device='" + device_name + "', count = " + station_count);
 
-            //station_count_map.put(device_name, station_count);
             sinfo = new ScanInfo(freq, ssid, bssid, device_name, station_count);
-
         }
 
         return sinfo;
@@ -158,7 +156,6 @@ public class MainActivity extends AppCompatActivity {
     public void doScan(View view) throws IllegalAccessException, ClassNotFoundException {
         int total_station = 0;
 
-        //List<String> displayList = new ArrayList<>();
         List<ScanInfo> displayList = new ArrayList<>();
         List<ScanResult> apList = scanNeighbourAP();
         HashMap<ScanInfo, Integer> station_count_map = parseScanResults(apList);
@@ -173,19 +170,12 @@ public class MainActivity extends AppCompatActivity {
             ScanInfo sInfo = iterator.next();
 
             total_station += sInfo.getStationCount();
-            //displayList.add(sinfo.toPrettyString());
             displayList.add(sInfo);
         }
 
         /* update station count */
         TextView tv = (TextView) findViewById(R.id.station_count);
         tv.setText(String.valueOf(total_station) + " ");
-
-
-        /* update list: requring sort */
-        //ArrayAdapter<String> adapter = new ArrayAdapter<>(
-        //        this, android.R.layout.simple_list_item_1, displayList
-        //);
 
         ListView lv = (ListView) findViewById(R.id.scan_listview);
         ScanInfoAdapter adapter = new ScanInfoAdapter(this, R.layout.scanlist_item, displayList);
