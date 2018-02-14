@@ -45,7 +45,7 @@ public class ScanInfoAdapter extends ArrayAdapter<ScanInfo>{
         tv.setText(sInfo.getBSSID());
 
         tv = (TextView)view.findViewById(R.id.per_device_ssid);
-        tv.setText(sInfo.getSSID());
+        tv.setText(sInfo.getPrettySSIDs());
 
         tv = (TextView)view.findViewById(R.id.per_device_freq);
         tv.setText(String.valueOf(sInfo.getFreq()));

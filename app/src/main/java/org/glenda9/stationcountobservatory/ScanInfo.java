@@ -1,10 +1,12 @@
 package org.glenda9.stationcountobservatory;
 
 import java.util.Objects;
+import java.util.ArrayList;
 
 public class ScanInfo implements Comparable<ScanInfo> {
     private int freq;
     private String ssid;
+    private ArrayList<String> ssids;
     private String bssid;
     private String device_name;
     private int station_count;
@@ -15,12 +17,13 @@ public class ScanInfo implements Comparable<ScanInfo> {
         this.bssid = bssid;
         this.device_name = device_name;
         this.station_count = station_count;
+        this.ssids = new ArrayList<>();
     }
 
     public String toPrettyString() {
         return "\"" + this.device_name + "\"\n" +
                 "Count: " + this.station_count + "\n" +
-                "BSSID=" + this.bssid + ", SSID=" + this.ssid + ", FREQ=" + this.freq;
+                "BSSID=" + this.bssid + ", SSID=" + this.ssids.toString() + ", FREQ=" + this.freq;
     }
 
     public int getFreq() {
@@ -29,6 +32,29 @@ public class ScanInfo implements Comparable<ScanInfo> {
 
     public String getSSID() {
         return this.ssid;
+    }
+
+    public ArrayList<String> getSSIDs() {
+        return this.ssids;
+    }
+
+    public String getPrettySSIDs() {
+        StringBuilder builder = new StringBuilder();
+        int len = this.ssids.size();
+        for (int i = 0; i < len; i++) {
+            builder.append("\"" + this.ssids.get(i) + "\"");
+            if (i != len - 1) {
+                builder.append(", ");
+            }
+        }
+
+        return builder.toString();
+    }
+
+    public void addSSIDs(String ssid) {
+        if (!this.ssids.contains(ssid)) {
+            this.ssids.add(ssid);
+        }
     }
 
     public String getBSSID() {

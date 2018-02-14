@@ -102,11 +102,11 @@ public class MainActivity extends AppCompatActivity {
             int ie_len = out.readInt();
             byte[] ie_buf = new byte[ie_len];
             out.readByteArray(ie_buf);
+
             if (ie_id != IE_ID_CC1X) {
                 continue;
             }
 
-            Log.i(LOGNAME, "foud cc1x + devicename " + ie_len + " " + ie_buf[0]);
             int unknown1_idx = 0;
             int device_name_idx = unknown1_idx + 10;
             int station_count_idx = device_name_idx + 16;
@@ -125,9 +125,8 @@ public class MainActivity extends AppCompatActivity {
             int station_count = (int)ie_buf[station_count_idx];
             String device_name = new String(device_name_bytes);
 
-            Log.i(LOGNAME, "device='" + device_name + "', count = " + station_count);
-
             sInfo = new ScanInfo(freq, ssid, bssid, device_name, station_count);
+
             Log.i(LOGNAME, sInfo.toPrettyString());
         }
 
@@ -141,15 +140,30 @@ public class MainActivity extends AppCompatActivity {
             return null;
         }
 
-
         for (int i = 0; i < apList.size(); i++) {
             ScanResult sr = apList.get(i);
-            ScanInfo sinfo = parseScanResultToScanInfo(sr);
-            if (sinfo == null) {
+            ScanInfo sInfo = parseScanResultToScanInfo(sr);
+            if (sInfo == null) {
                 continue;
             }
 
-            station_count_map.put(sinfo, sinfo.getStationCount());
+            Set<ScanInfo> keySet = station_count_map.keySet();
+            Iterator<ScanInfo> iterator = keySet.iterator();
+            boolean found = false;
+
+            while (iterator.hasNext()) {
+                ScanInfo old_sInfo = iterator.next();
+
+                if (sInfo.equals(old_sInfo)) {
+                    found = true;
+                    old_sInfo.addSSIDs(sInfo.getSSID());
+                    break;
+                }
+            }
+
+            if (!found) {
+                station_count_map.put(sInfo, sInfo.getStationCount());
+            }
         }
 
         return station_count_map;
