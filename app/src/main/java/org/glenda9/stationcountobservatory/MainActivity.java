@@ -162,6 +162,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             if (!found) {
+                sInfo.addSSIDs(sInfo.getSSID());
                 station_count_map.put(sInfo, sInfo.getStationCount());
             }
         }
