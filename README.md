@@ -44,13 +44,13 @@ This IE contains AP's hostname and number of stations associated to the AP.
 - Unknown1 is 10 bytes field with unknown content
 - **DeviceName** contains Device Name(= hostname?), zero padded to 16 bytes field
 - **Clients** contains hexadecimal station count, 1 byte field
-  - Though the beacon belongs to single SSID, it is likely that this fields contains sum of clients for each band
-  - e.g) if AP has 2 SSID in 2.4GHz and 2 SSID in 5GHz and each clients are 2, 3, 5, 6, then Clients field in all 2.4GHz Beacon is 5 (2+3) while 11 (5+6) in 5GHz.
+  - Though the beacon belongs to single SSID, it is likely that this field contains sum of clients for each band
+  - e.g) if AP has 2 SSID in 2.4GHz and 2 SSID in 5GHz and each clients are 2, 3, 5, 6 then Clients field in all 2.4GHz Beacon is 5 (2+3) while 11 (5+6) in 5GHz.
 - Unknown2 is 3 bytes field with unknown content
 
 ## ref. QBSS Load IE
 
-Some devices reports it's number of associated clients with QBSS Load IE.
+Some devices report their number of associated clients with QBSS Load IE.
 While this IE does not contains Device Name, it includes channel utilization and available media time.
 
 ![QBSS Load IE](doc/sco_qbssload_ie.png)
