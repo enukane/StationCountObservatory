@@ -12,6 +12,7 @@ import android.net.wifi.WifiManager;
 import android.widget.TextView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.EditText;
 
 import java.util.List;
 import java.util.Arrays;
@@ -51,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public ScanInfo parseScanResultToScanInfo(ScanResult sr) {
-        ScanInfo sinfo = null;
+        ScanInfo sInfo = null;
 
         /*
         Accessing Information Elemenents through parcel.
@@ -126,10 +127,11 @@ public class MainActivity extends AppCompatActivity {
 
             Log.i(LOGNAME, "device='" + device_name + "', count = " + station_count);
 
-            sinfo = new ScanInfo(freq, ssid, bssid, device_name, station_count);
+            sInfo = new ScanInfo(freq, ssid, bssid, device_name, station_count);
+            Log.i(LOGNAME, sInfo.toPrettyString());
         }
 
-        return sinfo;
+        return sInfo;
     }
 
     public HashMap<ScanInfo, Integer> parseScanResults(List<ScanResult> apList) {
@@ -155,11 +157,17 @@ public class MainActivity extends AppCompatActivity {
 
     public void doScan(View view) throws IllegalAccessException, ClassNotFoundException {
         int total_station = 0;
+        String ssid_filter = null;
 
         List<ScanInfo> displayList = new ArrayList<>();
         List<ScanResult> apList = scanNeighbourAP();
         HashMap<ScanInfo, Integer> station_count_map = parseScanResults(apList);
         List<ScanInfo> listScanInfo = new ArrayList<ScanInfo>(station_count_map.keySet());
+
+        /* get text input: to filter SSID */
+        EditText et = (EditText)findViewById(R.id.ssid_filter);
+        ssid_filter = et.getText().toString();
+        Log.i(LOGNAME, "ssidfilter => " + ssid_filter);
 
         /* sort scaninfo */
         Collections.sort(listScanInfo);
@@ -168,6 +176,10 @@ public class MainActivity extends AppCompatActivity {
         Iterator<ScanInfo> iterator = listScanInfo.iterator();
         while (iterator.hasNext()) {
             ScanInfo sInfo = iterator.next();
+
+            if (ssid_filter != null && ssid_filter != "" && !sInfo.getSSID().contains(ssid_filter)) {
+                continue;
+            }
 
             total_station += sInfo.getStationCount();
             displayList.add(sInfo);
