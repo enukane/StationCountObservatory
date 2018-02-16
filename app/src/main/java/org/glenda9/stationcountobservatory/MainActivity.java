@@ -111,7 +111,10 @@ public class MainActivity extends AppCompatActivity {
         int numconnections = out.readInt();
         int numusage = out.readInt();
         int numipconffail = out.readInt();
-        int isautojoincandidate = out.readInt();
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            /* isAutoJoinCandidate is deprecated in Oreo */
+            int isautojoincandidate = out.readInt();
+        }
         String venuename = out.readString();
         String opfriendlyname = out.readString();
         Long flags = out.readLong();
