@@ -6,6 +6,7 @@ import android.os.Parcel;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
@@ -13,6 +14,7 @@ import android.widget.TextView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import java.util.List;
 import java.util.Arrays;
@@ -33,6 +35,23 @@ public class MainActivity extends AppCompatActivity {
         Log.i(LOGNAME, "starting");
     }
 
+    public void showToast(String message) {
+        Toast toast = Toast.makeText(this, message, Toast.LENGTH_SHORT);
+        toast.setGravity(Gravity.BOTTOM, 0, 0);
+        toast.show();
+    }
+
+    public void clearCountAndList() {
+        List<ScanInfo> emptyDisplayList = new ArrayList<>();
+        /* update station count */
+        TextView tv = (TextView) findViewById(R.id.station_count);
+        tv.setText(String.valueOf(0) + " ");
+
+        ListView lv = (ListView) findViewById(R.id.scan_listview);
+        ScanInfoAdapter adapter = new ScanInfoAdapter(this, R.layout.scanlist_item, emptyDisplayList);
+        lv.setAdapter(adapter);
+    }
+
     public List<ScanResult> scanNeighbourAP() {
         Log.i(LOGNAME, "start scanning");
 
@@ -44,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
 
         WifiManager manager = (WifiManager) getSystemService(WIFI_SERVICE);
         if (manager.getWifiState() != WifiManager.WIFI_STATE_ENABLED) {
+            showToast("Wi-Fi not enabled!");
             return null;
         }
 
@@ -173,9 +193,16 @@ public class MainActivity extends AppCompatActivity {
     public void doScan(View view) throws IllegalAccessException, ClassNotFoundException {
         int total_station = 0;
         String ssid_filter = null;
-
         List<ScanInfo> displayList = new ArrayList<>();
         List<ScanResult> apList = scanNeighbourAP();
+
+        if (apList == null) {
+            /* no scan data or wifi not enabled */
+            showToast("No AP found");
+            clearCountAndList();
+            return;
+        }
+
         HashMap<ScanInfo, Integer> station_count_map = parseScanResults(apList);
         List<ScanInfo> listScanInfo = new ArrayList<ScanInfo>(station_count_map.keySet());
 
@@ -191,14 +218,28 @@ public class MainActivity extends AppCompatActivity {
         Iterator<ScanInfo> iterator = listScanInfo.iterator();
         while (iterator.hasNext()) {
             ScanInfo sInfo = iterator.next();
+            boolean foundSSID = false;
 
-            if (ssid_filter != null && ssid_filter != "" && !sInfo.getSSID().contains(ssid_filter)) {
+            Iterator<String> iterString = sInfo.getSSIDs().iterator();
+            while (iterString.hasNext()) {
+                String str = iterString.next();
+                if (str.contains(ssid_filter)) {
+                    foundSSID = true;
+                    break;
+                }
+            }
+
+            if (ssid_filter != null && ssid_filter != "" && !foundSSID) {
                 continue;
             }
 
             total_station += sInfo.getStationCount();
             displayList.add(sInfo);
         }
+
+        showToast("Total SSIDs: " + apList.size() +
+                "\nAPs with count: " + listScanInfo.size() +
+                "\nDisplayed APs: " + displayList.size());
 
         /* update station count */
         TextView tv = (TextView) findViewById(R.id.station_count);
