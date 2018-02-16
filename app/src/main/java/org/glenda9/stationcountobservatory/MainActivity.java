@@ -25,9 +25,15 @@ import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import java.lang.reflect.Field;
+
 public class MainActivity extends AppCompatActivity {
     public static final String LOGNAME="scobservatory";
     public static final int IE_ID_CC1X=133;
+    public static final String SR_MEMBER_IES="informationElements";
+    public static final String SR_IE_MEMBER_ID="id";
+    public static final String SR_IE_MEMBER_BYTES="bytes";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,92 +77,71 @@ public class MainActivity extends AppCompatActivity {
         return manager.getScanResults();
     }
 
-    public ScanInfo parseScanResultToScanInfo(ScanResult sr) {
+    public ScanInfo parseScanResultToScanInfoByReflection(ScanResult sr) throws NoSuchFieldException, IllegalAccessException {
         ScanInfo sInfo = null;
+        int station_count = 0;
+        String device_name = "";
+        boolean found_count = false;
 
-        /*
-        Accessing Information Elemenents through parcel.
-        We expected ScanResult.bytes to be valid and accessible through reflection,
-        but actually it's empty. Only valid Information Element is in its private class
-        InformationElement (through informationElements member), but this is rather hard.
-        So here, we use Parce to parse IE and find CC1X + DeviceName.
-         */
-        Parcel out = Parcel.obtain();
-        sr.writeToParcel(out, 0);
-        out.setDataPosition(0);
+        Field field;
+        Object[] ieArray;
 
-        int ssid_parcel = out.readInt();
-        if (ssid_parcel == 1) {
-            int length = out.readInt();
-            byte b[] = new byte[length];
-            out.readByteArray(b);
-        }
+        /* acquire informationElements[] */
+        field = sr.getClass().getDeclaredField(SR_MEMBER_IES);
+        field.setAccessible(true);
+        ieArray = (Object[])field.get(sr);
 
-        String ssid = out.readString(); /** use later */
-        Log.i(LOGNAME, "ssid => " + ssid);
-        String bssid = out.readString(); /** use later */
-        Long hessid = out.readLong();
-        int anqpdomain =  out.readInt();
-        String capability = out.readString();
-        int level =  out.readInt();
-        int freq = out.readInt(); /** use later */
-        Long timestamp = out.readLong();
-        int distanceCm = out.readInt();
-        int distanceSdCm = out.readInt();
-        int channelWidth = out.readInt();
-        int freq0 = out.readInt();
-        int freq1 = out.readInt();
-        Long seen = out.readLong();
-        int untrusted = out.readInt();
-        int numconnections = out.readInt();
-        int numusage = out.readInt();
-        int numipconffail = out.readInt();
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            /* isAutoJoinCandidate is deprecated in Oreo */
-            int isautojoincandidate = out.readInt();
-        }
-        String venuename = out.readString();
-        String opfriendlyname = out.readString();
-        Long flags = out.readLong();
+        for (int i = 0; i < ieArray.length; i++) {
+            Object obj = ieArray[i];
+            int id;
+            byte[] bytes;
 
-        int ienum = out.readInt();
-        for (int j = 0; j < ienum; j++) {
-            int ie_id = out.readInt();
-            int ie_len = out.readInt();
-            byte[] ie_buf = new byte[ie_len];
-            out.readByteArray(ie_buf);
+            /* acquire IE id */
+            field = obj.getClass().getDeclaredField(SR_IE_MEMBER_ID);
+            field.setAccessible(true);
+            id = (int)field.get(obj);
 
-            if (ie_id != IE_ID_CC1X) {
-                continue;
+            /* acquire IE bytes */
+            field = obj.getClass().getDeclaredField(SR_IE_MEMBER_BYTES);
+            field.setAccessible(true);
+            bytes = (byte[])field.get(obj);
+
+            switch (id) {
+                case IE_ID_CC1X:
+                    int unknown1_idx = 0;
+                    int device_name_idx = unknown1_idx + 10;
+                    int station_count_idx = device_name_idx + 16;
+                    int device_name_end_idx = station_count_idx;
+
+
+                    for (int idx = device_name_idx; idx < station_count_idx; idx ++) {
+                        if (bytes[idx] != 0) {
+                            continue;
+                        }
+                        device_name_end_idx = idx;
+                        break;
+                    }
+
+                    byte[] device_name_bytes = Arrays.copyOfRange(bytes, device_name_idx, device_name_end_idx);
+                    station_count = (int)bytes[station_count_idx];
+                    device_name = new String(device_name_bytes);
+
+                    found_count = true;
+                    break;
+                default:
+                    /* ignore */
+                    break;
             }
-
-            int unknown1_idx = 0;
-            int device_name_idx = unknown1_idx + 10;
-            int station_count_idx = device_name_idx + 16;
-            int device_name_end_idx = station_count_idx;
-
-
-            for (int idx = device_name_idx; idx < station_count_idx; idx ++) {
-                if (ie_buf[idx] != 0) {
-                    continue;
-                }
-                device_name_end_idx = idx;
-                break;
-            }
-
-            byte[] device_name_bytes = Arrays.copyOfRange(ie_buf, device_name_idx, device_name_end_idx);
-            int station_count = (int)ie_buf[station_count_idx];
-            String device_name = new String(device_name_bytes);
-
-            sInfo = new ScanInfo(freq, ssid, bssid, device_name, station_count);
-
-            Log.i(LOGNAME, sInfo.toPrettyString());
         }
 
+        if (!found_count)
+            return null;
+
+        sInfo = new ScanInfo(sr.frequency, sr.SSID, sr.BSSID, device_name, station_count);
         return sInfo;
     }
 
-    public HashMap<ScanInfo, Integer> parseScanResults(List<ScanResult> apList) {
+    public HashMap<ScanInfo, Integer> parseScanResults(List<ScanResult> apList) throws NoSuchFieldException, IllegalAccessException {
         HashMap<ScanInfo, Integer> station_count_map = new HashMap<ScanInfo, Integer>();
 
         if (apList == null) {
@@ -165,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
 
         for (int i = 0; i < apList.size(); i++) {
             ScanResult sr = apList.get(i);
-            ScanInfo sInfo = parseScanResultToScanInfo(sr);
+            ScanInfo sInfo = parseScanResultToScanInfoByReflection(sr);
             if (sInfo == null) {
                 continue;
             }
@@ -193,7 +178,7 @@ public class MainActivity extends AppCompatActivity {
         return station_count_map;
     }
 
-    public void doScan(View view) throws IllegalAccessException, ClassNotFoundException {
+    public void doScan(View view) throws IllegalAccessException, ClassNotFoundException, Exception {
         int total_station = 0;
         String ssid_filter = null;
         List<ScanInfo> displayList = new ArrayList<>();
