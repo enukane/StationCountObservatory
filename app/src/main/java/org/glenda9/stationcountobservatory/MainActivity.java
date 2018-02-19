@@ -1,6 +1,7 @@
 package org.glenda9.stationcountobservatory;
 
 import android.content.pm.PackageManager;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Parcel;
 import android.support.v7.app.AppCompatActivity;
@@ -8,6 +9,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.widget.TextView;
@@ -34,11 +37,36 @@ public class MainActivity extends AppCompatActivity {
     public static final String SR_IE_MEMBER_ID="id";
     public static final String SR_IE_MEMBER_BYTES="bytes";
 
+    /* menu id */
+    public static final int MENU_CC1X_DEVICENAME=10;
+    public static final int MENU_QBSS_LOAD=20;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Log.i(LOGNAME, "starting");
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        menu.add(0, MENU_QBSS_LOAD, Menu.NONE, "QBSS Load");
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case MENU_QBSS_LOAD:
+                Intent intent = new Intent(MainActivity.this, QBSSLoad.class);
+                startActivity(intent);
+                break;
+            default:
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     public void showToast(String message) {
