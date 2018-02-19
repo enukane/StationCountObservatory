@@ -136,9 +136,9 @@ public class QBSSLoad extends AppCompatActivity {
                     int capIdx = 3;
 
                     byte[] station_count_bytes = Arrays.copyOfRange(bytes, stationCountIdx, utilizationIdx);
-                    stationCount = (int)((station_count_bytes[1] << 8) + (station_count_bytes[0]));
+                    stationCount = (int)(((station_count_bytes[1] & 0xFF) << 8) + (station_count_bytes[0] & 0xFF));
 
-                    utilizationRaw = (int)bytes[utilizationIdx];
+                    utilizationRaw = (int)(bytes[utilizationIdx] & 0xFF);
 
                     isCountFound = true;
                     break;

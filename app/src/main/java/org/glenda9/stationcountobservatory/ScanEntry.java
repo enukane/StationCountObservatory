@@ -19,7 +19,7 @@ public class ScanEntry implements Comparable<ScanEntry> {
         this.bssid = bssid;
         this.ssid = ssid;
         this.station_count = station_count;
-        this.utilization = ((double)utilization) * 255.0 / 100.0;
+        this.utilization = ((double)utilization) * 100.0 / 255.0;
     }
 
     public String toString() {
