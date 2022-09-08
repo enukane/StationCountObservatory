@@ -57,6 +57,9 @@ public class ScanEntryQBSSAdapter extends ArrayAdapter<ScanEntry> {
         tv = (TextView)view.findViewById(R.id.per_entry_utilization);
         tv.setText(String.format("%1$.2f", sEntry.getUtilization()) + "%");
 
+        tv = (TextView)view.findViewById(R.id.per_device_rssi);
+        tv.setText(String.valueOf(sEntry.getRSSI()));
+
         return view;
     }
 }

@@ -8,13 +8,15 @@ public class ScanInfo implements Comparable<ScanInfo> {
     private String ssid;
     private ArrayList<String> ssids;
     private String bssid;
+    private int rssi;
     private String device_name;
     private int station_count;
 
-    public ScanInfo(int freq, String ssid, String bssid, String device_name, int station_count) {
+    public ScanInfo(int freq, String ssid, String bssid, int rssi, String device_name, int station_count) {
         this.freq = freq;
         this.ssid = ssid;
         this.bssid = bssid;
+        this.rssi = rssi;
         this.device_name = device_name;
         this.station_count = station_count;
         this.ssids = new ArrayList<>();
@@ -60,6 +62,8 @@ public class ScanInfo implements Comparable<ScanInfo> {
     public String getBSSID() {
         return this.bssid;
     }
+
+    public int getRSSI() { return this.rssi; }
 
     public String getDeviceName() {
         return this.device_name;

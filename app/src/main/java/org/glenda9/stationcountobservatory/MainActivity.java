@@ -165,7 +165,7 @@ public class MainActivity extends AppCompatActivity {
         if (!found_count)
             return null;
 
-        sInfo = new ScanInfo(sr.frequency, sr.SSID, sr.BSSID, device_name, station_count);
+        sInfo = new ScanInfo(sr.frequency, sr.SSID, sr.BSSID, sr.level, device_name, station_count);
         return sInfo;
     }
 

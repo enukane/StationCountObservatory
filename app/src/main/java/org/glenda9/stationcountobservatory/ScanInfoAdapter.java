@@ -50,6 +50,9 @@ public class ScanInfoAdapter extends ArrayAdapter<ScanInfo>{
         tv = (TextView)view.findViewById(R.id.per_device_freq);
         tv.setText(String.valueOf(sInfo.getFreq()));
 
+        tv = (TextView)view.findViewById(R.id.per_device_rssi);
+        tv.setText(String.valueOf(sInfo.getRSSI()));
+
         return view;
     }
 }

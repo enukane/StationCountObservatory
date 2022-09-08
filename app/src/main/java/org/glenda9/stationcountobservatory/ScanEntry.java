@@ -11,13 +11,15 @@ public class ScanEntry implements Comparable<ScanEntry> {
     private int freq;
     private String bssid;
     private String ssid;
+    private int rssi;
     private int station_count;
     private double utilization;
 
-    public ScanEntry(int freq, String bssid, String ssid, int station_count, int utilization) {
+    public ScanEntry(int freq, String bssid, String ssid, int rssi, int station_count, int utilization) {
         this.freq = freq;
         this.bssid = bssid;
         this.ssid = ssid;
+        this.rssi = rssi;
         this.station_count = station_count;
         this.utilization = ((double)utilization) * 100.0 / 255.0;
     }
@@ -37,6 +39,8 @@ public class ScanEntry implements Comparable<ScanEntry> {
     public String getSSID() {
         return this.ssid;
     }
+
+    public int getRSSI() { return this.rssi; }
 
     public int getStationCount() {
         return this.station_count;

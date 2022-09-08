@@ -151,7 +151,7 @@ public class QBSSLoad extends AppCompatActivity {
         if (!isCountFound)
             return null;
 
-        scanEntry = new ScanEntry(sr.frequency, sr.BSSID, sr.SSID, stationCount, utilizationRaw);
+        scanEntry = new ScanEntry(sr.frequency, sr.BSSID, sr.SSID, sr.level, stationCount, utilizationRaw);
         return scanEntry;
     }
 
